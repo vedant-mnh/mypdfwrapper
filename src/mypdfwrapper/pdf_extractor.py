@@ -6,29 +6,28 @@ import io
 
 
 def extract_text(pdf_path: Path) -> str:
-    """
-    Handles:
-    - Digital PDFs
-    - Scanned PDFs
-    - Mixed PDFs (page-level routing)
-    """
-
     doc = fitz.open(str(pdf_path))
     full_text = []
 
     for i, page in enumerate(doc):
 
-        # --- Detect per page ---
-        page_text = page.get_text().strip()
+        # --- Always extract digital ---
+        digital_text = _extract_digital_page(page)
 
-        if page_text:
-            # DIGITAL PAGE
-            text = _extract_digital_page(page)
-        else:
-            # SCANNED PAGE
-            text = _extract_scanned_page(page)
+        # --- Decide if OCR is needed ---
+        image_list = page.get_images(full=True)
+        needs_ocr = bool(image_list) or len(digital_text.strip()) < 50
 
-        full_text.append(f"\n--- Page {i+1} ---\n{text}")
+        ocr_text = ""
+        if needs_ocr:
+            ocr_text = _extract_scanned_page(page)
+
+        # --- Merge ---
+        combined = digital_text
+        if ocr_text.strip():
+            combined += "\n[OCR]\n" + ocr_text
+
+        full_text.append(f"\n--- Page {i+1} ---\n{combined}")
 
     doc.close()
     return "\n".join(full_text)
