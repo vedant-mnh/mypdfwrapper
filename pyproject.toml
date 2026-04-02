@@ -5,11 +5,14 @@ description = "PDF extraction wrapper built on PyMuPDF"
 requires-python = ">=3.10"
 dependencies = [
     "pymupdf>=1.24.0",
+    "python-dotenv",
+    "pytesseract",
+    "pillow"
 ]
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/mypdfwrapper"]
